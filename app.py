@@ -38,7 +38,10 @@ if not df.empty:
 
         if len(matches) >= 1:
             matches = matches.copy()
-            matches['이름'] = matches['이름'] + matches.groupby('이름').cumcount().add(1).astype(str).radd(' (').radd(matches['이름']).mask(matches.groupby('이름').cumcount() == 0, matches['이름'])
-            st.table(matches[['이름', '금액']].reset_index(drop=True))
+            matches['이름_표시'] = matches['이름']
+            duplicated = matches.duplicated(subset=['이름'], keep=False)
+            if duplicated.any():
+                matches.loc[duplicated, '이름_표시'] = matches.loc[duplicated, '이름'] + ' (' + (matches.groupby('이름').cumcount() + 1).astype(str) + ')'
+            st.table(matches[['이름_표시', '금액']].rename(columns={'이름_표시': '이름'}).reset_index(drop=True))
         else:
             st.warning("일치하는 이름이 없습니다.")
