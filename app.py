@@ -1,4 +1,4 @@
-iimport streamlit as st
+import streamlit as st
 import pandas as pd
 
 # 엑셀 파일에서 데이터 불러오기 (조의금_자동화_자료.xlsx)
@@ -31,19 +31,11 @@ query = st.text_input("이름을 입력하세요:")
 
 if not df.empty:
     if query:
-        # 입력한 내용으로 필터링
-        matches = df[df['표시이름'].str.contains(query, na=False)]
+        # 입력한 내용으로 정확히 일치하는 이름만 필터링
+        matches = df[df['표시이름'].str.fullmatch(query.strip(), na=False)]
 
         if len(matches) >= 1:
             with st.expander("🔍 검색 결과 보기", expanded=True):
                 st.table(matches[['표시이름', '금액']].reset_index(drop=True))
         else:
             st.warning("일치하는 이름이 없습니다.")
-
-        # 추천 이름 미리 보기
-        with st.expander("🔍 추천 이름 보기"):
-            st.write(matches[['표시이름']].drop_duplicates().reset_index(drop=True))
-    else:
-        # query가 없을 때 전체 명단 보여주기
-        with st.expander("🔍 전체 명단 보기", expanded=True):
-            st.table(df[['표시이름', '금액']].reset_index(drop=True))me(columns={'표시이름': '이름'}))
