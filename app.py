@@ -25,8 +25,11 @@ if len(query) >= 1:
     suggestions = df[df['표시이름'].str.contains(query)]
     if not suggestions.empty:
         selected_name = st.selectbox("추천된 이름에서 선택:", suggestions['표시이름'].tolist())
-        selected_info = df[df['표시이름'] == selected_name].iloc[0]
-        st.success(f"{selected_info['표시이름']} 님의 조의금은 {selected_info['금액']}만원입니다.")
+        if selected_name in df['표시이름'].values:
+            selected_info = df[df['표시이름'] == selected_name].iloc[0]
+            st.success(f"{selected_info['표시이름']} 님의 조의금은 {selected_info['금액']}만원입니다.")
+        else:
+            st.warning("선택한 이름이 명단에 없습니다.")
     else:
         st.warning("일치하는 이름이 없습니다.")
 
