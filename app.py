@@ -28,11 +28,14 @@ query = st.text_input("이름을 입력하세요:")
 
 if not df.empty:
     if query:
-        # 입력한 내용으로 정확히 일치하는 이름만 필터링
-        matches = df[df['이름'].str.fullmatch(query.strip(), na=False)]
+        # 입력한 내용으로 정확히 일치하는 이름만 필터링 (대소문자 무시, 앞뒤 공백 제거)
+        matches = df[df['이름'].str.strip().str.lower() == query.strip().lower()]
 
         if len(matches) >= 1:
-            with st.expander("🔍 검색 결과 보기", expanded=True):
-                st.table(matches[['이름', '금액']].reset_index(drop=True))
+            # 이름이 중복되는 경우 (1), (2) 표시
+            matches = matches.copy()
+            matches['이름'] = matches['이름'] + matches.groupby('이름').cumcount().add(1).astype(str).radd(' (').radd(matches['이름']).mask(matches.groupby('이름').cumcount() == 0, matches['이름'])
+
+            st.table(matches[['이름', '금액']].reset_index(drop=True))
         else:
             st.warning("일치하는 이름이 없습니다.")
