@@ -29,19 +29,25 @@ st.title("조의금 명단 자동화")
 # 사용자 이름 입력
 query = st.text_input("이름을 입력하세요:")
 
-# 자동완성 후보 필터링 (한 글자 이상부터 추천)
-if len(query) >= 1 and not df.empty:
-    suggestions = df[df['표시이름'].str.contains(query, na=False)]
-    if not suggestions.empty:
-        selected_name = st.selectbox("추천된 이름에서 선택:", suggestions['표시이름'].tolist())
-        selected_info = df[df['표시이름'] == selected_name]
-        if not selected_info.empty:
-            selected_info = selected_info.iloc[0]
-            st.success(f"{selected_info['표시이름']} 님의 조의금은 {selected_info['금액']}만원입니다.")
+if query and not df.empty:
+    # 입력한 내용으로 필터링
+    matches = df[df['표시이름'].str.contains(query, na=False)]
+
+    if len(matches) == 1:
+        row = matches.iloc[0]
+        st.success(f"{row['표시이름']} 님의 조의금은 {row['금액']}만원입니다.")
+    elif len(matches) > 1:
+        selected_name = st.selectbox("여러 명이 검색되었습니다. 선택해주세요:", matches['표시이름'].tolist())
+        row = matches[matches['표시이름'] == selected_name].iloc[0]
+        st.success(f"{row['표시이름']} 님의 조의금은 {row['금액']}만원입니다.")
     else:
         st.warning("일치하는 이름이 없습니다.")
 
+    # 추천 이름 미리 보기
+    with st.expander("🔍 추천 이름 보기"):
+        st.write(matches[['표시이름']].drop_duplicates().reset_index(drop=True))
+
 # 전체 명단 표시
 if not df.empty:
-    with st.expander("전체 조의금 명단 보기"):
+    with st.expander("📋 전체 조의금 명단 보기"):
         st.dataframe(df[['표시이름', '금액']].rename(columns={'표시이름': '이름'}))
